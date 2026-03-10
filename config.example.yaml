@@ -1,5 +1,5 @@
 roam:
-  base_url: https://api.ro.am
+  base_url: https://api.ro.am/v0
   token: replace-me-with-roam-api-token
   channels:
     vendors: replace-with-roam-chat-id-or-channel-name
