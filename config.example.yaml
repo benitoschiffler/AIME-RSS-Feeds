@@ -11,6 +11,7 @@ state:
 request_timeout_seconds: 20
 request_retries: 2
 max_items_per_company: 3
+min_published_date: 2026-03-01
 
 google_news:
   hl: en-US

@@ -337,6 +337,16 @@ def parse_isoish_date(value: str | None) -> str | None:
     return raw[:10]
 
 
+def parse_cutoff_date(config: dict[str, Any]) -> dt.date | None:
+    raw = config.get("min_published_date")
+    if raw in (None, ""):
+        return None
+    try:
+        return dt.date.fromisoformat(str(raw))
+    except ValueError as exc:
+        raise SponsorWatchError(f"Invalid min_published_date: {raw}") from exc
+
+
 def strip_html(value: str) -> str:
     value = html.unescape(value or "")
     value = HTML_TAG_RE.sub(" ", value)
@@ -531,9 +541,20 @@ def fetch_google_news_articles(session: requests.Session, company: Company, conf
     return articles
 
 
-def select_recent_articles(articles: Iterable[Article], max_items: int) -> list[Article]:
+def select_recent_articles(
+    articles: Iterable[Article], max_items: int, min_published_date: dt.date | None
+) -> list[Article]:
     unique: dict[str, Article] = {}
     for article in articles:
+        if min_published_date is not None:
+            if article.published is None:
+                continue
+            try:
+                published_date = dt.date.fromisoformat(article.published)
+            except ValueError:
+                continue
+            if published_date < min_published_date:
+                continue
         existing = unique.get(article.dedupe_key)
         if existing is None or (article.is_official and not existing.is_official):
             unique[article.dedupe_key] = article
@@ -546,11 +567,12 @@ def select_recent_articles(articles: Iterable[Article], max_items: int) -> list[
 
 
 def collect_articles_for_company(session: requests.Session, company: Company, config: dict[str, Any]) -> list[Article]:
+    min_published_date = parse_cutoff_date(config)
     official = fetch_official_articles(session, company)
     if official:
-        return select_recent_articles(official, int(config.get("max_items_per_company", 3)))
+        return select_recent_articles(official, int(config.get("max_items_per_company", 3)), min_published_date)
     fallback = fetch_google_news_articles(session, company, config)
-    return select_recent_articles(fallback, int(config.get("max_items_per_company", 3)))
+    return select_recent_articles(fallback, int(config.get("max_items_per_company", 3)), min_published_date)
 
 
 def format_alert(article: Article) -> str:
@@ -564,7 +586,7 @@ def format_alert(article: Article) -> str:
         {summary}
 
         Source: {source_name}
-        Published: {published}
+        Published: **{published}**
         Link: {article.url}
         """
     ).strip()

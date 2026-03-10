@@ -73,7 +73,7 @@ The docs describe chat posting as markdown-formatted text, which is what the ale
 Short summary in 1-2 lines.
 
 Source: official company blog
-Published: 2026-03-05
+Published: **2026-03-05**
 Link: https://example.com/post
 ```
 
@@ -86,6 +86,10 @@ Link: https://example.com/post
 - `strict_google_match`: stronger fallback filter for ambiguous names like `Roam`, `MMI`, `EPM`, `PRMG`, and `RETR`
 - `official_domains`: optional allowlist used when scraping HTML pages
 - `official_sources`: optional list of `rss`, `atom`, or `html` URLs
+
+`config.yaml` / `config.example.yaml` supports:
+
+- `min_published_date`: drops anything older than the given `YYYY-MM-DD` date and skips undated items
 
 ## GitHub Actions
 
