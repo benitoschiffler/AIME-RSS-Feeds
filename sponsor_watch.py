@@ -155,7 +155,13 @@ class RoamClient:
             json=payload,
             timeout=self.timeout,
         )
-        response.raise_for_status()
+        if not response.ok:
+            detail = response.text.strip()
+            if len(detail) > 500:
+                detail = detail[:500] + "..."
+            raise SponsorWatchError(
+                f"Roam chat.post failed ({response.status_code}) for payload key {payload_key}: {detail or 'no response body'}"
+            )
         return response.json() if response.content else {}
 
     def list_chats(self) -> list[dict[str, Any]]:
