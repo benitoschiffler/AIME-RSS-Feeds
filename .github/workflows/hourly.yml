@@ -33,7 +33,7 @@ jobs:
       - name: Write runtime config
         run: |
           mkdir -p state
-          cat > config.yaml <<'EOF'
+          cat > config.yaml <<EOF
           roam:
             base_url: https://api.ro.am
             token: ${ROAM_API_TOKEN}
