@@ -148,7 +148,8 @@ class RoamClient:
         )
 
     def post_message(self, chat_id: str, text: str) -> dict[str, Any]:
-        payload = {"chat_id": chat_id, "text": text}
+        payload_key = "group_id" if UUID_RE.match(chat_id.strip()) else "chat_id"
+        payload = {payload_key: chat_id.strip(), "text": text}
         response = self.session.post(
             f"{self.base_url}/chat.post",
             json=payload,
