@@ -170,9 +170,10 @@ class RoamClient:
         return response.json() if response.content else {}
 
     def resolve_chat_id(self, configured_value: str) -> str:
-        if configured_value.startswith(("C-", "G-", "D-")) or UUID_RE.match(configured_value):
-            return configured_value
-        target = configured_value.strip().lower()
+        normalized_value = configured_value.strip()
+        if normalized_value.startswith(("C-", "G-", "D-")) or UUID_RE.match(normalized_value):
+            return normalized_value
+        target = normalized_value.lower()
         for chat in self.list_chats():
             candidates = {
                 str(chat.get("id", "")).lower(),
