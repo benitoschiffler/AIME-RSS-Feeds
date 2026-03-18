@@ -496,12 +496,18 @@ def google_news_rss_url(company: Company, config: dict[str, Any]) -> str:
     geo = google_config.get("gl", "US")
     ceid = google_config.get("ceid", "US:en")
 
-    terms: list[str] = [f"\"{company.name}\""]
-    for alias in company.aliases:
-        terms.append(f"\"{alias}\"")
-    context = " OR ".join(terms)
     context_terms = " OR ".join(f"\"{keyword}\"" for keyword in ("mortgage", "loan", "lender", "broker", "wholesale"))
-    query = f"({context}) ({context_terms})"
+
+    if company.list_name == "aime_mentions":
+        aime_terms = " OR ".join(f"\"{term}\"" for term in company.search_terms)
+        query = f"({aime_terms}) \"mortgage\""
+    else:
+        terms: list[str] = [f"\"{company.name}\""]
+        for alias in company.aliases:
+            terms.append(f"\"{alias}\"")
+        context = " OR ".join(terms)
+        query = f"({context}) ({context_terms})"
+
     encoded = urllib.parse.quote(query)
     return f"https://news.google.com/rss/search?q={encoded}&hl={language}&gl={geo}&ceid={ceid}"
 

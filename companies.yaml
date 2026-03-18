@@ -66,4 +66,5 @@ watchlists:
     - name: Association of Independent Mortgage Experts
       aliases:
         - AIME
+        - Association of Independent Mortgage Experts (AIME)
       strict_google_match: true
