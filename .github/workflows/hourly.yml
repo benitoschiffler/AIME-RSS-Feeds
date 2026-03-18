@@ -40,12 +40,14 @@ jobs:
             channels:
               vendors: ${ROAM_VENDOR_CHANNEL}
               lenders: ${ROAM_LENDER_CHANNEL}
+              aime_mentions: ${ROAM_AIME_CHANNEL}
           state:
             path: state/sponsor_watch.sqlite3
           request_timeout_seconds: 20
           request_retries: 2
           max_items_per_company: 3
           min_published_date: 2026-03-01
+          roam_post_delay_seconds: 1.0
           google_news:
             hl: en-US
             gl: US
@@ -55,6 +57,7 @@ jobs:
           ROAM_API_TOKEN: ${{ secrets.ROAM_API_TOKEN }}
           ROAM_VENDOR_CHANNEL: ${{ secrets.ROAM_VENDOR_CHANNEL }}
           ROAM_LENDER_CHANNEL: ${{ secrets.ROAM_LENDER_CHANNEL }}
+          ROAM_AIME_CHANNEL: ${{ secrets.ROAM_AIME_CHANNEL }}
 
       - name: Run watcher
         run: python sponsor_watch.py --config config.yaml --companies companies.yaml run

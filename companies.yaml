@@ -62,3 +62,8 @@ watchlists:
     - name: PRMG
       strict_google_match: true
     - name: The Loan Store
+  aime_mentions:
+    - name: Association of Independent Mortgage Experts
+      aliases:
+        - AIME
+      strict_google_match: true

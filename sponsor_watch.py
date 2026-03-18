@@ -270,6 +270,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     subparsers.add_parser("run", help="Scan both watchlists and post any new alerts to Roam.")
     subparsers.add_parser("test-vendors", help="Scan vendors and print alerts without posting.")
     subparsers.add_parser("test-lenders", help="Scan lenders and print alerts without posting.")
+    subparsers.add_parser("test-aime", help="Scan AIME mentions and print alerts without posting.")
     return parser.parse_args(argv)
 
 
@@ -576,7 +577,12 @@ def collect_articles_for_company(session: requests.Session, company: Company, co
 
 
 def format_alert(article: Article) -> str:
-    label = "Vendor Alert" if article.list_name == "vendors" else "Lender Alert"
+    label_map = {
+        "vendors": "Vendor Alert",
+        "lenders": "Lender Alert",
+        "aime_mentions": "AIME Alert",
+    }
+    label = label_map.get(article.list_name, "Alert")
     published = article.published or "unknown"
     source_name = article.source_label
     summary = article.summary or "New mention found. Open the source for details."
@@ -614,7 +620,7 @@ def resolve_post_targets(config: dict[str, Any], roam_client: RoamClient) -> dic
     if not isinstance(channels, dict):
         raise SponsorWatchError("config.yaml roam.channels must be a mapping")
     targets: dict[str, str] = {}
-    for list_name in ("vendors", "lenders"):
+    for list_name in ("vendors", "lenders", "aime_mentions"):
         raw_value = channels.get(list_name)
         if not raw_value:
             raise SponsorWatchError(f"Missing Roam channel mapping for {list_name}")
@@ -642,12 +648,15 @@ def run_watch(command: str, config_path: Path, companies_path: Path) -> int:
     session = make_session(config)
     store = DedupeStore(Path(config["state"].get("path", "state/sponsor_watch.sqlite3")))
     should_post = command == "run"
+    post_delay_seconds = float(config.get("roam_post_delay_seconds", 1.0))
 
-    lists_to_run = ["vendors", "lenders"]
+    lists_to_run = ["vendors", "lenders", "aime_mentions"]
     if command == "test-vendors":
         lists_to_run = ["vendors"]
     elif command == "test-lenders":
         lists_to_run = ["lenders"]
+    elif command == "test-aime":
+        lists_to_run = ["aime_mentions"]
 
     roam_client: RoamClient | None = None
     post_targets: dict[str, str] = {}
@@ -668,6 +677,8 @@ def run_watch(command: str, config_path: Path, companies_path: Path) -> int:
                     if should_post and roam_client is not None:
                         roam_client.post_message(post_targets[list_name], format_alert(article))
                         LOG.info("Posted alert for %s: %s", company.name, article.title)
+                        if post_delay_seconds > 0:
+                            time.sleep(post_delay_seconds)
                     store.mark_seen(article)
         print_alerts(all_new_articles)
         return 0

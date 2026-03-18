@@ -1,11 +1,12 @@
 # Sponsor Watch
 
-Hourly Python watcher for two mortgage sponsor watchlists. It checks official company feeds/pages first when you define them in `companies.yaml`, falls back to Google News RSS when needed, dedupes locally with SQLite, and posts short markdown alerts into separate Roam channels.
+Hourly Python watcher for three mortgage watchlists. It checks official company feeds/pages first when you define them in `companies.yaml`, falls back to Google News RSS when needed, dedupes locally with SQLite, and posts short markdown alerts into separate Roam channels.
 
 ## Files
 
 - `sponsor_watch.py`: single CLI entrypoint
 - `companies.yaml`: vendor/lender watchlists and optional official sources
+- `companies.yaml`: vendor/lender/AIME watchlists and optional official sources
 - `config.example.yaml`: runtime config template
 - `.github/workflows/hourly.yml`: hourly GitHub Actions job
 
@@ -46,10 +47,11 @@ If no official sources are configured for a company, the script goes straight to
 python sponsor_watch.py run
 python sponsor_watch.py test-vendors
 python sponsor_watch.py test-lenders
+python sponsor_watch.py test-aime
 ```
 
-- `run` scans both watchlists, posts any new alerts to Roam, and records dedupe state.
-- `test-vendors` and `test-lenders` print candidate alerts without posting.
+- `run` scans all watchlists, posts any new alerts to Roam, and records dedupe state.
+- `test-vendors`, `test-lenders`, and `test-aime` print candidate alerts without posting.
 
 ## Roam Notes
 
@@ -87,9 +89,16 @@ Link: https://example.com/post
 - `official_domains`: optional allowlist used when scraping HTML pages
 - `official_sources`: optional list of `rss`, `atom`, or `html` URLs
 
+The default file now includes an `aime_mentions` watchlist for:
+
+- `Association of Independent Mortgage Experts`
+  Aliases: `AIME`
+  Matching intent: the full organization name or `AIME` in mortgage context
+
 `config.yaml` / `config.example.yaml` supports:
 
 - `min_published_date`: drops anything older than the given `YYYY-MM-DD` date and skips undated items
+- `roam_post_delay_seconds`: small pause between Roam posts to reduce rate-limit errors
 
 ## GitHub Actions
 
@@ -98,5 +107,6 @@ The included workflow runs hourly and also supports manual dispatch. Add these r
 - `ROAM_API_TOKEN`
 - `ROAM_VENDOR_CHANNEL`
 - `ROAM_LENDER_CHANNEL`
+- `ROAM_AIME_CHANNEL`
 
 The workflow writes `config.yaml` from secrets at runtime and persists the SQLite dedupe database using the GitHub Actions cache. That is lightweight and workable for V1, but if you need stronger durability later, move state to S3/R2/Postgres.

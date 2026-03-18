@@ -4,6 +4,7 @@ roam:
   channels:
     vendors: replace-with-roam-chat-id-or-channel-name
     lenders: replace-with-roam-chat-id-or-channel-name
+    aime_mentions: replace-with-roam-chat-id-or-channel-name
 
 state:
   path: state/sponsor_watch.sqlite3
@@ -12,6 +13,7 @@ request_timeout_seconds: 20
 request_retries: 2
 max_items_per_company: 3
 min_published_date: 2026-03-01
+roam_post_delay_seconds: 1.0
 
 google_news:
   hl: en-US
